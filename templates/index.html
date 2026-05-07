@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PiNT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="10">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: monospace; background: 
+#1a1a1a; color: 
+#00ff88; padding: 16px; }
+        h1 { font-size: 1.4em; margin-bottom: 4px; }
+        .subtitle { color: #666; font-size: 0.85em; margin-bottom: 20px; }
+        .card { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .card-title { font-size: 1.1em; color: 
+#00ff88; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .field { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid 
+#2a2a2a; gap: 12px; }
+        .field:last-child { border-bottom: none; }
+        .label { color: #666; font-size: 0.85em; white-space: nowrap; }
+        .value { color: 
+#00ff88; font-size: 0.85em; text-align: right; word-break: break-all; }
+        a { color: 
+#00aaff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .no-data { color: #666; text-align: center; margin-top: 40px; font-size: 0.9em; }
+        .footer { color: #444; font-size: 0.75em; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🍺 PiNT</h1>
+    <p class="subtitle">Listening for LLDP neighbours on eth0...</p>
+    <div id="data">
+        <p class="no-data">No neighbours detected yet.<br>Page refreshes every 10 seconds.</p>
+    </div>
+    <p class="footer">PiNT Hardware v0.1</p>
+    <script>
+        fetch('/api/neighbours')
+            .then(r => r.json())
+            .then(data => {
+                if (data.length === 0) return;
+                let html = '';
+                data.forEach(n => {
+                    const mgmt = n.mgmt_ip
+                        ? <a href="http://${n.mgmt_ip}" target="_blank">${n.mgmt_ip}</a>
+                        : '—';
+                    html += 
+                    <div class="card">
+                        <div class="card-title">${n.system_name || 'Unknown Device'}</div>
+                        <div class="field"><span class="label">Port</span><span class="value">${n.port_id || '—'}</span></div>
+                        <div class="field"><span class="label">Chassis ID</span><span class="value">${n.chassis_id || '—'}</span></div>
+                        <div class="field"><span class="label">VLAN</span><span class="value">${n.vlan_id || '—'}</span></div>
+                        <div class="field"><span class="label">Mgmt IP</span><span class="value">${mgmt}</span></div>
+                        <div class="field"><span class="label">TTL</span><span class="value">${n.ttl || '—'}s</span></div>
+                        <div class="field"><span class="label">Description</span><span class="value">${n.system_description || '—'}</span></div>
+                    </div>;
+                });
+                document.getElementById('data').innerHTML = html;
+            });
+    </script>
+</body>
+</html>
