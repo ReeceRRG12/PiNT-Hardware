@@ -154,6 +154,10 @@ Enable everything and reboot:
     └── templates/
         └── index.html
 
+## Built with
+
+PiNT Hardware was built by vibe coding with [Claude](https://claude.ai) by Anthropic.
+
 ## Security note
 
 The web UI has no authentication. It is intended for use on the isolated PiNT hotspot only — do not expose port 5000 on a production or shared network. The app runs as root to allow raw packet capture via Scapy.
