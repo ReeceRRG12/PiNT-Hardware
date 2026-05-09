@@ -1,6 +1,6 @@
 # PiNT Hardware 🍺
 
-![Version](https://img.shields.io/badge/version-v0.2-1a7a4a?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.2.1-1a7a4a?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%204-c51a4a?style=flat-square&logo=raspberrypi&logoColor=white)
 [![Website](https://img.shields.io/badge/website-pinetworktools.com-0077cc?style=flat-square)](https://pinetworktools.com)
 
