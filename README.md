@@ -49,7 +49,7 @@ Use Raspberry Pi Imager with Raspberry Pi OS Lite (64-bit). In the settings conf
     mkdir pint && cd pint
     python3 -m venv venv
     source venv/bin/activate
-    pip install flask scapy
+    pip install -r requirements.txt
 
 ### 4. Deploy the app
 
@@ -149,6 +149,14 @@ Enable everything and reboot:
     ├── app.py
     └── templates/
         └── index.html
+
+## Security note
+
+The web UI has no authentication. It is intended for use on the isolated PiNT hotspot only — do not expose port 5000 on a production or shared network. The app runs as root to allow raw packet capture via Scapy.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ## Roadmap
 
