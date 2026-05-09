@@ -6,18 +6,18 @@
 
 A Raspberry Pi network appliance that passively listens on a switch port and displays live network information via a mobile-friendly web dashboard.
 
-Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly see switch details, DHCP scope, local devices, and cable health — no laptop required.
+Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly see switch details, DHCP scope, local devices, and cable health. No laptop required.
 
 ## What it does
 
-- **Layer 2 Neighbours** — captures LLDP and CDP packets on eth0, displays switch/AP name, port, chassis ID, VLAN, management IP, and description
-- **mDNS Discovery** — passively listens for mDNS announcements and resolves device names and IPs across common service types
-- **Interface & Cable Test** — shows link speed, duplex, RX/TX rates, and cumulative error/drop counters
-- **IP Info** — displays the Pi's own IP, subnet, gateway, DNS, and MAC on eth0
-- **DHCP Scope** — sends a DHCP DISCOVER and shows all options returned by the server (lease time, DNS, NTP, TFTP, vendor options, etc.)
+- **Layer 2 Neighbours:** captures LLDP and CDP packets on eth0, displays switch/AP name, port, chassis ID, VLAN, management IP, and description
+- **mDNS Discovery:** passively listens for mDNS announcements and resolves device names and IPs across common service types
+- **Interface & Cable Test:** shows link speed, duplex, RX/TX rates, and cumulative error/drop counters
+- **IP Info:** displays the Pi's own IP, subnet, gateway, DNS, and MAC on eth0
+- **DHCP Scope:** sends a DHCP DISCOVER and shows all options returned by the server (lease time, DNS, NTP, TFTP, vendor options, etc.)
 - Serves a mobile-friendly web UI at `http://pint.local:5000`
 - Broadcasts its own WiFi hotspot (SSID: PiNT) for access on isolated VLANs
-- Auto-starts on boot — no interaction needed
+- Auto-starts on boot with no interaction needed
 
 ## Hardware
 
@@ -145,7 +145,7 @@ Enable everything and reboot:
 1. Plug PiNT into any switch port
 2. Connect your phone or laptop to the **PiNT** WiFi network using the password you set
 3. Browse to `http://pint.local:5000`
-4. Layer 2 neighbour information appears within 30–60 seconds; mDNS devices populate as announcements are heard
+4. Layer 2 neighbour information appears within 30-60 seconds. mDNS devices populate as announcements are heard
 
 ## Project structure
 
@@ -160,11 +160,11 @@ PiNT Hardware was built by vibe coding with [Claude](https://claude.ai) by Anthr
 
 ## Security note
 
-The web UI has no authentication. It is intended for use on the isolated PiNT hotspot only — do not expose port 5000 on a production or shared network. The app runs as root to allow raw packet capture via Scapy.
+The web UI has no authentication. It is intended for use on the isolated PiNT hotspot only. Do not expose port 5000 on a production or shared network. The app runs as root to allow raw packet capture via Scapy.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
 
 ## Roadmap
 
