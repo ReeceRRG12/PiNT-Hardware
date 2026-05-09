@@ -1,5 +1,9 @@
 # PiNT Hardware 🍺
 
+![Version](https://img.shields.io/badge/version-v0.2-00ff88?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%204-c51a4a?style=flat-square&logo=raspberrypi&logoColor=white)
+[![Website](https://img.shields.io/badge/website-pinetworktools.com-0077cc?style=flat-square)](https://pinetworktools.com)
+
 A Raspberry Pi network appliance that passively listens on a switch port and displays live network information via a mobile-friendly web dashboard.
 
 Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly see switch details, DHCP scope, local devices, and cable health — no laptop required.
