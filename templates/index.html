@@ -1,62 +1,336 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PiNT</title>
+    <title>PiNT Hardware</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="10">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: monospace; background: 
-#1a1a1a; color: 
-#00ff88; padding: 16px; }
-        h1 { font-size: 1.4em; margin-bottom: 4px; }
-        .subtitle { color: #666; font-size: 0.85em; margin-bottom: 20px; }
-        .card { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-        .card-title { font-size: 1.1em; color: 
-#00ff88; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        .field { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid 
-#2a2a2a; gap: 12px; }
+        body { font-family: monospace; background: #111; color: #ccc; padding: 16px; }
+
+        header { margin-bottom: 20px; }
+        header h1 { font-size: 1.5em; color: #00ff88; }
+        header p  { color: #555; font-size: 0.8em; margin-top: 2px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 14px;
+        }
+        .card.full-width { grid-column: 1 / -1; }
+
+        .card-title {
+            font-size: 0.95em;
+            color: #00ff88;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .count { font-size: 0.75em; color: #555; margin-left: auto; }
+
+        .field {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #1e1e1e;
+            gap: 10px;
+            font-size: 0.82em;
+        }
         .field:last-child { border-bottom: none; }
-        .label { color: #666; font-size: 0.85em; white-space: nowrap; }
-        .value { color: 
-#00ff88; font-size: 0.85em; text-align: right; word-break: break-all; }
-        a { color: 
-#00aaff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .no-data { color: #666; text-align: center; margin-top: 40px; font-size: 0.9em; }
-        .footer { color: #444; font-size: 0.75em; text-align: center; margin-top: 20px; }
+        .label { color: #555; white-space: nowrap; flex-shrink: 0; }
+        .value { color: #ddd; text-align: right; word-break: break-all; }
+        .value a { color: #00aaff; text-decoration: none; }
+        .value a:hover { text-decoration: underline; }
+
+        .badge {
+            font-size: 0.65em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            letter-spacing: 0.04em;
+        }
+        .badge-lldp { background: #003322; color: #00ff88; }
+        .badge-cdp  { background: #002233; color: #00aaff; }
+
+        .neighbour-list { display: flex; flex-direction: column; gap: 10px; }
+        .neighbour {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .neighbour-header {
+            font-size: 0.9em;
+            color: #eee;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mdns-list { display: flex; flex-direction: column; gap: 0; }
+        .mdns-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #1e1e1e;
+            font-size: 0.82em;
+            gap: 10px;
+        }
+        .mdns-row:last-child { border-bottom: none; }
+        .mdns-name  { color: #ddd; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mdns-stype { color: #444; font-size: 0.85em; flex-shrink: 0; }
+        .mdns-ip    { flex-shrink: 0; }
+        .mdns-ip a  { color: #00aaff; text-decoration: none; }
+        .mdns-ip a:hover { text-decoration: underline; }
+
+        .stat-good  { color: #00ff88; }
+        .stat-warn  { color: #ffaa00; }
+        .stat-error { color: #ff4757; }
+        .link-up    { color: #00ff88; }
+        .link-down  { color: #ff4757; }
+
+        .flag-standard { color: #00ff88; }
+        .flag-notable  { color: #ffaa00; }
+        .flag-unknown  { color: #ff4757; }
+
+        .no-data { color: #444; font-size: 0.82em; text-align: center; padding: 12px 0; }
+
+        footer { color: #333; font-size: 0.72em; text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>🍺 PiNT</h1>
-    <p class="subtitle">Listening for LLDP neighbours on eth0...</p>
-    <div id="data">
-        <p class="no-data">No neighbours detected yet.<br>Page refreshes every 10 seconds.</p>
+
+<header>
+    <h1>PiNT Hardware</h1>
+    <p id="last-update">Loading&hellip;</p>
+</header>
+
+<div class="grid">
+
+    <div class="card" id="card-ip">
+        <div class="card-title">This Device</div>
+        <div class="no-data">Loading&hellip;</div>
     </div>
-    <p class="footer">PiNT Hardware v0.1</p>
-    <script>
-        fetch('/api/neighbours')
-            .then(r => r.json())
-            .then(data => {
-                if (data.length === 0) return;
-                let html = '';
-                data.forEach(n => {
-                    const mgmt = n.mgmt_ip
-                        ? <a href="http://${n.mgmt_ip}" target="_blank">${n.mgmt_ip}</a>
-                        : '—';
-                    html += 
-                    <div class="card">
-                        <div class="card-title">${n.system_name || 'Unknown Device'}</div>
-                        <div class="field"><span class="label">Port</span><span class="value">${n.port_id || '—'}</span></div>
-                        <div class="field"><span class="label">Chassis ID</span><span class="value">${n.chassis_id || '—'}</span></div>
-                        <div class="field"><span class="label">VLAN</span><span class="value">${n.vlan_id || '—'}</span></div>
-                        <div class="field"><span class="label">Mgmt IP</span><span class="value">${mgmt}</span></div>
-                        <div class="field"><span class="label">TTL</span><span class="value">${n.ttl || '—'}s</span></div>
-                        <div class="field"><span class="label">Description</span><span class="value">${n.system_description || '—'}</span></div>
-                    </div>;
-                });
-                document.getElementById('data').innerHTML = html;
-            });
-    </script>
+
+    <div class="card" id="card-iface">
+        <div class="card-title">Interface &amp; Cable Test</div>
+        <div class="no-data">Loading&hellip;</div>
+    </div>
+
+    <div class="card full-width" id="card-neighbours">
+        <div class="card-title">
+            Layer 2 Neighbours
+            <span class="count" id="neighbour-count"></span>
+        </div>
+        <div class="no-data">Listening for LLDP / CDP&hellip;</div>
+    </div>
+
+    <div class="card full-width" id="card-mdns">
+        <div class="card-title">
+            mDNS Devices
+            <span class="count" id="mdns-count"></span>
+        </div>
+        <div class="no-data">Listening for mDNS&hellip;</div>
+    </div>
+
+    <div class="card full-width" id="card-dhcp">
+        <div class="card-title">DHCP Scope Options</div>
+        <div class="no-data">Fetching DHCP options&hellip;</div>
+    </div>
+
+</div>
+
+<footer>PiNT Hardware v0.2 &mdash; refreshes every 10 s</footer>
+
+<script>
+'use strict';
+
+function fmtBps(bps) {
+    if (bps >= 1e9) return (bps / 1e9).toFixed(1) + ' Gbps';
+    if (bps >= 1e6) return (bps / 1e6).toFixed(1) + ' Mbps';
+    if (bps >= 1e3) return (bps / 1e3).toFixed(1) + ' kbps';
+    return bps + ' bps';
+}
+
+function field(label, value) {
+    return `<div class="field"><span class="label">${label}</span><span class="value">${value}</span></div>`;
+}
+
+// ── IP Config ─────────────────────────────────────────────────────────────────
+
+async function refreshIp() {
+    const card = document.getElementById('card-ip');
+    try {
+        const d = await fetch('/api/ip').then(r => r.json());
+        const gw  = d.gateway !== 'Unknown'
+            ? `<a href="http://${d.gateway}" target="_blank">${d.gateway}</a>` : '—';
+        const dns = d.dns && d.dns.length ? d.dns.join(', ') : '—';
+        let html  = `<div class="card-title">This Device</div>`;
+        html += field('Hostname',    d.hostname || '—');
+        html += field('IP Address',  d.ip       || '—');
+        html += field('Subnet Mask', d.subnet   || '—');
+        html += field('Gateway',     gw);
+        html += field('DNS',         dns);
+        if (d.domain && d.domain !== 'Unknown') html += field('Domain', d.domain);
+        html += field('MAC',  d.mac || '—');
+        html += field('DHCP', d.dhcp_enabled
+            ? '<span class="stat-good">Enabled</span>' : 'Static');
+        if (d.dhcp_server && d.dhcp_server !== 'Unknown')
+            html += field('DHCP Server', d.dhcp_server);
+        card.innerHTML = html;
+    } catch (e) {
+        card.innerHTML = `<div class="card-title">This Device</div><div class="no-data">Error: ${e}</div>`;
+    }
+}
+
+// ── Interface / Cable Test ────────────────────────────────────────────────────
+
+async function refreshIface() {
+    const card = document.getElementById('card-iface');
+    try {
+        const d = await fetch('/api/interface').then(r => r.json());
+        const errCls = n => n === 0 ? 'stat-good' : n < 100 ? 'stat-warn' : 'stat-error';
+        const rx_err = d.rx_errors_total  || 0;
+        const tx_err = d.tx_errors_total  || 0;
+        const rx_drp = d.rx_dropped_total || 0;
+        const tx_drp = d.tx_dropped_total || 0;
+        let html = `<div class="card-title">Interface &amp; Cable Test</div>`;
+        html += field('Link',       `<span class="${d.link === 'up' ? 'link-up' : 'link-down'}">${d.link || '—'}</span>`);
+        html += field('Speed',      d.speed_mbps != null ? d.speed_mbps + ' Mbps' : '—');
+        html += field('Duplex',     d.duplex || '—');
+        html += field('RX Rate',    fmtBps(d.rx_bps || 0));
+        html += field('TX Rate',    fmtBps(d.tx_bps || 0));
+        html += field('RX Errors',  `<span class="${errCls(rx_err)}">${rx_err.toLocaleString()}</span>`);
+        html += field('TX Errors',  `<span class="${errCls(tx_err)}">${tx_err.toLocaleString()}</span>`);
+        html += field('RX Dropped', `<span class="${errCls(rx_drp)}">${rx_drp.toLocaleString()}</span>`);
+        html += field('TX Dropped', `<span class="${errCls(tx_drp)}">${tx_drp.toLocaleString()}</span>`);
+        html += field('RX Packets', (d.rx_packets_total || 0).toLocaleString());
+        html += field('TX Packets', (d.tx_packets_total || 0).toLocaleString());
+        card.innerHTML = html;
+    } catch (e) {
+        card.innerHTML = `<div class="card-title">Interface &amp; Cable Test</div><div class="no-data">Error: ${e}</div>`;
+    }
+}
+
+// ── Neighbours (LLDP + CDP) ───────────────────────────────────────────────────
+
+async function refreshNeighbours() {
+    const card = document.getElementById('card-neighbours');
+    try {
+        const data = await fetch('/api/neighbours').then(r => r.json());
+        if (!data.length) {
+            card.innerHTML = `<div class="card-title">Layer 2 Neighbours <span class="count"></span></div>
+                              <div class="no-data">Listening for LLDP / CDP&hellip;</div>`;
+            return;
+        }
+        const items = data.map(n => {
+            const proto   = n.protocol || 'LLDP';
+            const badgeCls = proto === 'CDP' ? 'badge-cdp' : 'badge-lldp';
+            const title   = n.system_name || n.chassis_id || 'Unknown';
+            const mgmt    = n.mgmt_ip
+                ? `<a href="http://${n.mgmt_ip}" target="_blank">${n.mgmt_ip}</a>` : '—';
+            let html = `<div class="neighbour">
+                <div class="neighbour-header">
+                    <span class="badge ${badgeCls}">${proto}</span>${title}
+                </div>`;
+            html += field('Port',       n.port_id    || '—');
+            html += field('Chassis ID', n.chassis_id || '—');
+            if (n.model)   html += field('Model',       n.model);
+            if (n.vlan_id) html += field('VLAN',        n.vlan_id);
+            html += field('Mgmt IP',    mgmt);
+            if (n.ttl)     html += field('TTL',         n.ttl + 's');
+            if (n.system_description) html += field('Description', n.system_description);
+            html += '</div>';
+            return html;
+        }).join('');
+        card.innerHTML = `<div class="card-title">Layer 2 Neighbours <span class="count">${data.length} found</span></div>
+                          <div class="neighbour-list">${items}</div>`;
+    } catch (e) {
+        card.innerHTML = `<div class="card-title">Layer 2 Neighbours</div><div class="no-data">Error: ${e}</div>`;
+    }
+}
+
+// ── mDNS ─────────────────────────────────────────────────────────────────────
+
+async function refreshMdns() {
+    const card = document.getElementById('card-mdns');
+    try {
+        const data = await fetch('/api/mdns').then(r => r.json());
+        if (!data.length) {
+            card.innerHTML = `<div class="card-title">mDNS Devices <span class="count"></span></div>
+                              <div class="no-data">Listening for mDNS&hellip;</div>`;
+            return;
+        }
+        data.sort((a, b) => {
+            const aIp = a.ip && a.ip !== 'Unknown';
+            const bIp = b.ip && b.ip !== 'Unknown';
+            if (aIp !== bIp) return bIp ? 1 : -1;
+            return (a.friendly || '').localeCompare(b.friendly || '');
+        });
+        const rows = data.map(d => {
+            const ipHtml = d.ip && d.ip !== 'Unknown'
+                ? `<span class="mdns-ip"><a href="http://${d.ip}" target="_blank">${d.ip}</a></span>`
+                : `<span class="mdns-ip" style="color:#333">—</span>`;
+            return `<div class="mdns-row">
+                <span class="mdns-name" title="${d.instance || ''}">${d.friendly || d.instance || '—'}</span>
+                <span class="mdns-stype">${d.type || ''}</span>
+                ${ipHtml}
+            </div>`;
+        }).join('');
+        card.innerHTML = `<div class="card-title">mDNS Devices <span class="count">${data.length} found</span></div>
+                          <div class="mdns-list">${rows}</div>`;
+    } catch (e) {
+        card.innerHTML = `<div class="card-title">mDNS Devices</div><div class="no-data">Error: ${e}</div>`;
+    }
+}
+
+// ── DHCP Scope ────────────────────────────────────────────────────────────────
+
+async function refreshDhcp() {
+    const card = document.getElementById('card-dhcp');
+    try {
+        const resp = await fetch('/api/dhcp').then(r => r.json());
+        const opts = resp.options || [];
+        const age  = resp.fetched_at
+            ? Math.round(Date.now() / 1000 - resp.fetched_at) : null;
+        const ageStr = age != null
+            ? ` <span style="color:#444;font-size:0.8em">(${age < 60 ? age + 's' : Math.round(age / 60) + 'm'} ago)</span>`
+            : '';
+        if (!opts.length) {
+            card.innerHTML = `<div class="card-title">DHCP Scope Options${ageStr}</div>
+                              <div class="no-data">Waiting for DHCP ACK&hellip;</div>`;
+            return;
+        }
+        const rows = opts.map(o =>
+            field(`<span class="flag-${o.flag || 'unknown'}">[${o.option}] ${o.label}</span>`, o.value)
+        ).join('');
+        card.innerHTML = `<div class="card-title">DHCP Scope Options${ageStr}</div>${rows}`;
+    } catch (e) {
+        card.innerHTML = `<div class="card-title">DHCP Scope Options</div><div class="no-data">Error: ${e}</div>`;
+    }
+}
+
+// ── Refresh loop ──────────────────────────────────────────────────────────────
+
+async function refresh() {
+    document.getElementById('last-update').textContent =
+        'Last updated: ' + new Date().toLocaleTimeString();
+    await Promise.all([refreshIp(), refreshIface(), refreshNeighbours(), refreshMdns(), refreshDhcp()]);
+}
+
+refresh();
+setInterval(refresh, 10000);
+</script>
 </body>
 </html>

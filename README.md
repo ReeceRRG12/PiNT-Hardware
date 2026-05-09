@@ -1,14 +1,17 @@
 # PiNT Hardware 🍺
 
-A Raspberry Pi network appliance that passively listens for LLDP broadcasts and displays live network information via a mobile-friendly web dashboard.
+A Raspberry Pi network appliance that passively listens on a switch port and displays live network information via a mobile-friendly web dashboard.
 
-Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly see what switch, port, and VLAN you're connected to — no laptop required.
+Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly see switch details, DHCP scope, local devices, and cable health — no laptop required.
 
 ## What it does
 
-- Captures LLDP packets on eth0
-- Displays switch name, port, chassis ID, VLAN, management IP and description
-- Serves a mobile-friendly web UI at pint.local:5000
+- **Layer 2 Neighbours** — captures LLDP and CDP packets on eth0, displays switch/AP name, port, chassis ID, VLAN, management IP, and description
+- **mDNS Discovery** — passively listens for mDNS announcements and resolves device names and IPs across common service types
+- **Interface & Cable Test** — shows link speed, duplex, RX/TX rates, and cumulative error/drop counters
+- **IP Info** — displays the Pi's own IP, subnet, gateway, DNS, and MAC on eth0
+- **DHCP Scope** — sends a DHCP DISCOVER and shows all options returned by the server (lease time, DNS, NTP, TFTP, vendor options, etc.)
+- Serves a mobile-friendly web UI at `http://pint.local:5000`
 - Broadcasts its own WiFi hotspot (SSID: PiNT) for access on isolated VLANs
 - Auto-starts on boot — no interaction needed
 
@@ -31,9 +34,9 @@ Plug it into any switch port, connect to the PiNT WiFi hotspot, and instantly se
 ### 1. Flash the SD card
 
 Use Raspberry Pi Imager with Raspberry Pi OS Lite (64-bit). In the settings configure:
-- Hostname: PiNT
+- Hostname: `PiNT`
 - Enable SSH
-- Set username and password
+- Set a username and password of your choice
 - Optional: WiFi credentials for initial setup
 
 ### 2. Update the system
@@ -50,13 +53,13 @@ Use Raspberry Pi Imager with Raspberry Pi OS Lite (64-bit). In the settings conf
 
 ### 4. Deploy the app
 
-Create the following files:
-- ~/pint/app.py
-- ~/pint/templates/index.html
+Copy the following files into `~/pint/`:
+- `app.py`
+- `templates/index.html`
 
 ### 5. Set up the systemd service
 
-Create /etc/systemd/system/pint.service:
+Create `/etc/systemd/system/pint.service`:
 
     [Unit]
     Description=PiNT Network Tester
@@ -73,7 +76,7 @@ Create /etc/systemd/system/pint.service:
     [Install]
     WantedBy=multi-user.target
 
-Then enable and start it:
+Enable and start it:
 
     sudo systemctl daemon-reload
     sudo systemctl enable pint
@@ -85,7 +88,7 @@ Install hostapd and dnsmasq:
 
     sudo apt install hostapd dnsmasq -y
 
-Configure /etc/hostapd/hostapd.conf:
+Configure `/etc/hostapd/hostapd.conf`:
 
     interface=wlan0
     driver=nl80211
@@ -96,28 +99,28 @@ Configure /etc/hostapd/hostapd.conf:
     macaddr_acl=0
     auth_algs=1
     wpa=2
-    wpa_passphrase=PintOfBeer
+    wpa_passphrase=YourPasswordHere
     wpa_key_mgmt=WPA-PSK
     wpa_pairwise=TKIP
     rsn_pairwise=CCMP
 
-Update /etc/default/hostapd:
+Update `/etc/default/hostapd`:
 
     DAEMON_CONF="/etc/hostapd/hostapd.conf"
 
-Replace /etc/dnsmasq.conf:
+Replace `/etc/dnsmasq.conf`:
 
     interface=wlan0
     dhcp-range=192.168.50.10,192.168.50.50,255.255.255.0,24h
     domain=local
     address=/pint.local/192.168.50.1
 
-Tell NetworkManager to leave wlan0 alone by adding to /etc/NetworkManager/NetworkManager.conf:
+Tell NetworkManager to leave wlan0 alone by adding to `/etc/NetworkManager/NetworkManager.conf`:
 
     [keyfile]
     unmanaged-devices=interface-name:wlan0
 
-Create /etc/NetworkManager/dispatcher.d/pre-up.d/wlan0-static:
+Create `/etc/NetworkManager/dispatcher.d/pre-up.d/wlan0-static`:
 
     #!/bin/bash
     ip addr add 192.168.50.1/24 dev wlan0
@@ -136,9 +139,9 @@ Enable everything and reboot:
 ## Usage
 
 1. Plug PiNT into any switch port
-2. Connect your phone or laptop to PiNT WiFi (password: PintOfBeer)
-3. Browse to http://pint.local:5000
-4. LLDP neighbour information appears within 30-60 seconds
+2. Connect your phone or laptop to the **PiNT** WiFi network using the password you set
+3. Browse to `http://pint.local:5000`
+4. Layer 2 neighbour information appears within 30–60 seconds; mDNS devices populate as announcements are heard
 
 ## Project structure
 
@@ -149,7 +152,6 @@ Enable everything and reboot:
 
 ## Roadmap
 
-- CDP support for Cisco switches
 - Small e-paper display integration
-- Session export
+- Session export / report generation
 - Favicon
