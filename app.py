@@ -275,6 +275,8 @@ def _send_mdns_queries():
 
 
 def _mdns_query_loop():
+    # Wait for eth0 to settle before first query
+    time.sleep(20)
     while True:
         _send_mdns_queries()
         time.sleep(60)
@@ -525,6 +527,8 @@ def _fetch_dhcp_options(timeout=10):
 
 
 def _dhcp_refresh_loop():
+    # Wait for eth0 to fully come up before first DHCP probe
+    time.sleep(15)
     while True:
         options = _fetch_dhcp_options()
         _dhcp_cache["options"] = options
@@ -543,7 +547,8 @@ def _start_cdp():
 
 
 def _start_mdns():
-    sniff(filter="udp port 5353", prn=handle_mdns, store=0)
+    # Explicitly bind to eth0 so we don't accidentally sniff on wlan0
+    sniff(iface=IFACE, filter="udp port 5353", prn=handle_mdns, store=0)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
