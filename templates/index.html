@@ -1,160 +1,225 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PiNT Hardware</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PiNT</title>
+    <meta name="viewport" content="width=320, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700&display=swap');
+
+        :root {
+            --bg:       #0a0a0f;
+            --bg2:      #111118;
+            --bg3:      #1a1a24;
+            --border:   #1e1e2e;
+            --green:    #00ff88;
+            --blue:     #00aaff;
+            --amber:    #ffaa00;
+            --red:      #ff4757;
+            --dim:      #444466;
+            --text:     #ccccdd;
+            --tab-h:    44px;
+            --hdr-h:    36px;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: monospace; background: #111; color: #ccc; padding: 16px; }
 
-        header { margin-bottom: 20px; }
-        header h1 { font-size: 1.5em; color: #00ff88; }
-        header p  { color: #555; font-size: 0.8em; margin-top: 2px; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 14px;
+        html, body {
+            width: 320px;
+            height: 480px;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
         }
 
-        .card {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            padding: 14px;
-        }
-        .card.full-width { grid-column: 1 / -1; }
-
-        .card-title {
-            font-size: 0.95em;
-            color: #00ff88;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #2a2a2a;
+        #header {
+            height: var(--hdr-h);
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            padding: 0 12px;
         }
-        .card-title .count { font-size: 0.75em; color: #555; margin-left: auto; }
+        #header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 0.1em;
+        }
+        #header h1 span { color: var(--dim); font-weight: 500; }
+        #clock { font-size: 12px; color: var(--dim); letter-spacing: 0.05em; }
+
+        #tabs {
+            height: var(--tab-h);
+            display: flex;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+        }
+        .tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-right: 1px solid var(--border);
+            color: var(--dim);
+            font-family: 'Orbitron', monospace;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            transition: background 0.15s, color 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            text-align: center;
+            padding: 0 2px;
+        }
+        .tab:last-child { border-right: none; }
+        .tab.active {
+            background: var(--bg3);
+            color: var(--green);
+            border-bottom: 2px solid var(--green);
+        }
+        .tab:not(.active):active { background: var(--bg3); }
+
+        #content {
+            height: calc(480px - var(--hdr-h) - var(--tab-h));
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        #content::-webkit-scrollbar { width: 4px; }
+        #content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
 
         .field {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #1e1e1e;
-            gap: 10px;
-            font-size: 0.82em;
-        }
-        .field:last-child { border-bottom: none; }
-        .label { color: #555; white-space: nowrap; flex-shrink: 0; }
-        .value { color: #ddd; text-align: right; word-break: break-all; }
-        .value a { color: #00aaff; text-decoration: none; }
-        .value a:hover { text-decoration: underline; }
-
-        .badge {
-            font-size: 0.65em;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            letter-spacing: 0.04em;
-        }
-        .badge-lldp { background: #003322; color: #00ff88; }
-        .badge-cdp  { background: #002233; color: #00aaff; }
-
-        .neighbour-list { display: flex; flex-direction: column; gap: 10px; }
-        .neighbour {
-            background: #141414;
-            border: 1px solid #222;
-            border-radius: 6px;
-            padding: 10px;
-        }
-        .neighbour-header {
-            font-size: 0.9em;
-            color: #eee;
-            margin-bottom: 8px;
-            display: flex;
             align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #0f0f18;
             gap: 8px;
         }
+        .field:last-child { border-bottom: none; }
+        .label { color: var(--dim); white-space: nowrap; flex-shrink: 0; font-size: 12px; }
+        .value { color: var(--text); text-align: right; word-break: break-all; font-size: 12px; }
+        .value a { color: var(--blue); text-decoration: none; }
 
-        .mdns-list { display: flex; flex-direction: column; gap: 0; }
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 9px;
+            color: var(--dim);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin: 10px 0 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .green { color: var(--green); }
+        .blue  { color: var(--blue); }
+        .amber { color: var(--amber); }
+        .red   { color: var(--red); }
+        .dim   { color: var(--dim); }
+
+        .neighbour {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 7px 8px;
+            margin-bottom: 6px;
+        }
+        .neighbour-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #eee;
+        }
+        .badge { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: bold; letter-spacing: 0.06em; }
+        .badge-lldp { background: #003322; color: var(--green); }
+        .badge-cdp  { background: #002233; color: var(--blue); }
+
         .mdns-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 5px 0;
-            border-bottom: 1px solid #1e1e1e;
-            font-size: 0.82em;
-            gap: 10px;
+            border-bottom: 1px solid #0f0f18;
+            gap: 6px;
+            font-size: 12px;
         }
         .mdns-row:last-child { border-bottom: none; }
-        .mdns-name  { color: #ddd; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .mdns-stype { color: #444; font-size: 0.85em; flex-shrink: 0; }
-        .mdns-ip    { flex-shrink: 0; }
-        .mdns-ip a  { color: #00aaff; text-decoration: none; }
-        .mdns-ip a:hover { text-decoration: underline; }
+        .mdns-name { color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mdns-type { color: var(--dim); font-size: 10px; flex-shrink: 0; }
+        .mdns-ip a { color: var(--blue); text-decoration: none; font-size: 11px; }
 
-        .stat-good  { color: #00ff88; }
-        .stat-warn  { color: #ffaa00; }
-        .stat-error { color: #ff4757; }
-        .link-up    { color: #00ff88; }
-        .link-down  { color: #ff4757; }
+        .no-data { color: var(--dim); font-size: 12px; text-align: center; padding: 20px 0; }
 
-        .flag-standard { color: #00ff88; }
-        .flag-notable  { color: #ffaa00; }
-        .flag-unknown  { color: #ff4757; }
+        .pulse {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+            vertical-align: middle;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        .no-data { color: #444; font-size: 0.82em; text-align: center; padding: 12px 0; }
-
-        footer { color: #333; font-size: 0.72em; text-align: center; margin-top: 20px; }
+        .flag-standard { color: var(--green); }
+        .flag-notable  { color: var(--amber); }
+        .flag-unknown  { color: var(--red); }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>PiNT Hardware</h1>
-    <p id="last-update">Loading&hellip;</p>
-</header>
-
-<div class="grid">
-
-    <div class="card" id="card-ip">
-        <div class="card-title">This Device</div>
-        <div class="no-data">Loading&hellip;</div>
-    </div>
-
-    <div class="card" id="card-iface">
-        <div class="card-title">Interface &amp; Cable Test</div>
-        <div class="no-data">Loading&hellip;</div>
-    </div>
-
-    <div class="card full-width" id="card-neighbours">
-        <div class="card-title">
-            Layer 2 Neighbours
-            <span class="count" id="neighbour-count"></span>
-        </div>
-        <div class="no-data">Listening for LLDP / CDP&hellip;</div>
-    </div>
-
-    <div class="card full-width" id="card-mdns">
-        <div class="card-title">
-            mDNS Devices
-            <span class="count" id="mdns-count"></span>
-        </div>
-        <div class="no-data">Listening for mDNS&hellip;</div>
-    </div>
-
-    <div class="card full-width" id="card-dhcp">
-        <div class="card-title">DHCP Scope Options</div>
-        <div class="no-data">Fetching DHCP options&hellip;</div>
-    </div>
-
+<div id="header">
+    <h1>Pi<span>NT</span></h1>
+    <div id="clock">--:--:--</div>
 </div>
 
-<footer>PiNT Hardware v0.2 &mdash; refreshes every 10 s</footer>
+<div id="tabs">
+    <div class="tab active" id="tab-ip"         data-panel="panel-ip"         onclick="switchTab(this)">DEVICE</div>
+    <div class="tab"        id="tab-iface"       data-panel="panel-iface"      onclick="switchTab(this)">IFACE</div>
+    <div class="tab"        id="tab-neighbours"  data-panel="panel-neighbours" onclick="switchTab(this)">L2</div>
+    <div class="tab"        id="tab-mdns"        data-panel="panel-mdns"       onclick="switchTab(this)">mDNS</div>
+    <div class="tab"        id="tab-dhcp"        data-panel="panel-dhcp"       onclick="switchTab(this)">DHCP</div>
+</div>
+
+<div id="content">
+    <div class="panel active" id="panel-ip"><div class="no-data">Loading&hellip;</div></div>
+    <div class="panel"        id="panel-iface"><div class="no-data">Loading&hellip;</div></div>
+    <div class="panel"        id="panel-neighbours"><div class="no-data">Listening for LLDP / CDP&hellip;</div></div>
+    <div class="panel"        id="panel-mdns"><div class="no-data">Listening for mDNS&hellip;</div></div>
+    <div class="panel"        id="panel-dhcp"><div class="no-data">Fetching DHCP options&hellip;</div></div>
+</div>
 
 <script>
 'use strict';
+
+function tickClock() {
+    document.getElementById('clock').textContent =
+        new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+function switchTab(el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(el.dataset.panel).classList.add('active');
+    document.getElementById('content').scrollTop = 0;
+}
 
 function fmtBps(bps) {
     if (bps >= 1e9) return (bps / 1e9).toFixed(1) + ' Gbps';
@@ -162,53 +227,48 @@ function fmtBps(bps) {
     if (bps >= 1e3) return (bps / 1e3).toFixed(1) + ' kbps';
     return bps + ' bps';
 }
-
 function field(label, value) {
     return `<div class="field"><span class="label">${label}</span><span class="value">${value}</span></div>`;
 }
-
-// ── IP Config ─────────────────────────────────────────────────────────────────
+function errCls(n) { return n === 0 ? 'green' : n < 100 ? 'amber' : 'red'; }
 
 async function refreshIp() {
-    const card = document.getElementById('card-ip');
+    const panel = document.getElementById('panel-ip');
     try {
         const d = await fetch('/api/ip').then(r => r.json());
-        const gw  = d.gateway !== 'Unknown'
-            ? `<a href="http://${d.gateway}" target="_blank">${d.gateway}</a>` : '—';
-        const dns = d.dns && d.dns.length ? d.dns.join(', ') : '—';
-        let html  = `<div class="card-title">This Device</div>`;
-        html += field('Hostname',    d.hostname || '—');
-        html += field('IP Address',  d.ip       || '—');
-        html += field('Subnet Mask', d.subnet   || '—');
-        html += field('Gateway',     gw);
-        html += field('DNS',         dns);
+        const gw  = d.gateway && d.gateway !== 'Unknown'
+            ? `<a href="http://${d.gateway}">${d.gateway}</a>` : '&mdash;';
+        const dns = d.dns && d.dns.length ? d.dns.join(', ') : '&mdash;';
+        let html = `<div class="section-title"><span class="pulse"></span>This Device</div>`;
+        html += field('Hostname', d.hostname || '&mdash;');
+        html += field('IP',       d.ip       || '&mdash;');
+        html += field('Subnet',   d.subnet   || '&mdash;');
+        html += field('Gateway',  gw);
+        html += field('DNS',      dns);
         if (d.domain && d.domain !== 'Unknown') html += field('Domain', d.domain);
-        html += field('MAC',  d.mac || '—');
+        html += field('MAC',  d.mac || '&mdash;');
         html += field('DHCP', d.dhcp_enabled
-            ? '<span class="stat-good">Enabled</span>' : 'Static');
+            ? '<span class="green">Enabled</span>' : '<span class="amber">Static</span>');
         if (d.dhcp_server && d.dhcp_server !== 'Unknown')
             html += field('DHCP Server', d.dhcp_server);
-        card.innerHTML = html;
+        panel.innerHTML = html;
     } catch (e) {
-        card.innerHTML = `<div class="card-title">This Device</div><div class="no-data">Error: ${e}</div>`;
+        panel.innerHTML = `<div class="no-data">Error: ${e}</div>`;
     }
 }
 
-// ── Interface / Cable Test ────────────────────────────────────────────────────
-
 async function refreshIface() {
-    const card = document.getElementById('card-iface');
+    const panel = document.getElementById('panel-iface');
     try {
         const d = await fetch('/api/interface').then(r => r.json());
-        const errCls = n => n === 0 ? 'stat-good' : n < 100 ? 'stat-warn' : 'stat-error';
         const rx_err = d.rx_errors_total  || 0;
         const tx_err = d.tx_errors_total  || 0;
         const rx_drp = d.rx_dropped_total || 0;
         const tx_drp = d.tx_dropped_total || 0;
-        let html = `<div class="card-title">Interface &amp; Cable Test</div>`;
-        html += field('Link',       `<span class="${d.link === 'up' ? 'link-up' : 'link-down'}">${d.link || '—'}</span>`);
-        html += field('Speed',      d.speed_mbps != null ? d.speed_mbps + ' Mbps' : '—');
-        html += field('Duplex',     d.duplex || '—');
+        let html = `<div class="section-title"><span class="pulse"></span>Interface &amp; Cable</div>`;
+        html += field('Link',       `<span class="${d.link === 'up' ? 'green' : 'red'}">${d.link || '&mdash;'}</span>`);
+        html += field('Speed',      d.speed_mbps != null ? d.speed_mbps + ' Mbps' : '&mdash;');
+        html += field('Duplex',     d.duplex || '&mdash;');
         html += field('RX Rate',    fmtBps(d.rx_bps || 0));
         html += field('TX Rate',    fmtBps(d.tx_bps || 0));
         html += field('RX Errors',  `<span class="${errCls(rx_err)}">${rx_err.toLocaleString()}</span>`);
@@ -217,61 +277,55 @@ async function refreshIface() {
         html += field('TX Dropped', `<span class="${errCls(tx_drp)}">${tx_drp.toLocaleString()}</span>`);
         html += field('RX Packets', (d.rx_packets_total || 0).toLocaleString());
         html += field('TX Packets', (d.tx_packets_total || 0).toLocaleString());
-        card.innerHTML = html;
+        panel.innerHTML = html;
     } catch (e) {
-        card.innerHTML = `<div class="card-title">Interface &amp; Cable Test</div><div class="no-data">Error: ${e}</div>`;
+        panel.innerHTML = `<div class="no-data">Error: ${e}</div>`;
     }
 }
 
-// ── Neighbours (LLDP + CDP) ───────────────────────────────────────────────────
-
 async function refreshNeighbours() {
-    const card = document.getElementById('card-neighbours');
+    const panel = document.getElementById('panel-neighbours');
+    const tab   = document.getElementById('tab-neighbours');
     try {
         const data = await fetch('/api/neighbours').then(r => r.json());
         if (!data.length) {
-            card.innerHTML = `<div class="card-title">Layer 2 Neighbours <span class="count"></span></div>
-                              <div class="no-data">Listening for LLDP / CDP&hellip;</div>`;
+            panel.innerHTML = `<div class="no-data">Listening for LLDP / CDP&hellip;</div>`;
+            tab.textContent = 'L2';
             return;
         }
+        tab.textContent = `L2(${data.length})`;
         const items = data.map(n => {
-            const proto   = n.protocol || 'LLDP';
+            const proto    = n.protocol || 'LLDP';
             const badgeCls = proto === 'CDP' ? 'badge-cdp' : 'badge-lldp';
-            const title   = n.system_name || n.chassis_id || 'Unknown';
-            const mgmt    = n.mgmt_ip
-                ? `<a href="http://${n.mgmt_ip}" target="_blank">${n.mgmt_ip}</a>` : '—';
-            let html = `<div class="neighbour">
-                <div class="neighbour-header">
-                    <span class="badge ${badgeCls}">${proto}</span>${title}
-                </div>`;
-            html += field('Port',       n.port_id    || '—');
-            html += field('Chassis ID', n.chassis_id || '—');
-            if (n.model)   html += field('Model',       n.model);
-            if (n.vlan_id) html += field('VLAN',        n.vlan_id);
-            html += field('Mgmt IP',    mgmt);
-            if (n.ttl)     html += field('TTL',         n.ttl + 's');
-            if (n.system_description) html += field('Description', n.system_description);
+            const title    = n.system_name || n.chassis_id || 'Unknown';
+            const mgmt     = n.mgmt_ip ? `<a href="http://${n.mgmt_ip}">${n.mgmt_ip}</a>` : '&mdash;';
+            let html = `<div class="neighbour"><div class="neighbour-header"><span class="badge ${badgeCls}">${proto}</span>${title}</div>`;
+            html += field('Port',    n.port_id    || '&mdash;');
+            html += field('Chassis', n.chassis_id || '&mdash;');
+            if (n.model)   html += field('Model',  n.model);
+            if (n.vlan_id) html += field('VLAN',   n.vlan_id);
+            html += field('Mgmt IP', mgmt);
+            if (n.ttl)     html += field('TTL',    n.ttl + 's');
             html += '</div>';
             return html;
         }).join('');
-        card.innerHTML = `<div class="card-title">Layer 2 Neighbours <span class="count">${data.length} found</span></div>
-                          <div class="neighbour-list">${items}</div>`;
+        panel.innerHTML = `<div class="section-title"><span class="pulse"></span>${data.length} neighbour${data.length !== 1 ? 's' : ''} found</div>${items}`;
     } catch (e) {
-        card.innerHTML = `<div class="card-title">Layer 2 Neighbours</div><div class="no-data">Error: ${e}</div>`;
+        panel.innerHTML = `<div class="no-data">Error: ${e}</div>`;
     }
 }
 
-// ── mDNS ─────────────────────────────────────────────────────────────────────
-
 async function refreshMdns() {
-    const card = document.getElementById('card-mdns');
+    const panel = document.getElementById('panel-mdns');
+    const tab   = document.getElementById('tab-mdns');
     try {
         const data = await fetch('/api/mdns').then(r => r.json());
         if (!data.length) {
-            card.innerHTML = `<div class="card-title">mDNS Devices <span class="count"></span></div>
-                              <div class="no-data">Listening for mDNS&hellip;</div>`;
+            panel.innerHTML = `<div class="no-data">Listening for mDNS&hellip;</div>`;
+            tab.textContent = 'mDNS';
             return;
         }
+        tab.textContent = `mDNS(${data.length})`;
         data.sort((a, b) => {
             const aIp = a.ip && a.ip !== 'Unknown';
             const bIp = b.ip && b.ip !== 'Unknown';
@@ -280,52 +334,39 @@ async function refreshMdns() {
         });
         const rows = data.map(d => {
             const ipHtml = d.ip && d.ip !== 'Unknown'
-                ? `<span class="mdns-ip"><a href="http://${d.ip}" target="_blank">${d.ip}</a></span>`
-                : `<span class="mdns-ip" style="color:#333">—</span>`;
+                ? `<span class="mdns-ip"><a href="http://${d.ip}">${d.ip}</a></span>`
+                : `<span class="dim">&mdash;</span>`;
             return `<div class="mdns-row">
-                <span class="mdns-name" title="${d.instance || ''}">${d.friendly || d.instance || '—'}</span>
-                <span class="mdns-stype">${d.type || ''}</span>
+                <span class="mdns-name" title="${d.instance || ''}">${d.friendly || d.instance || '&mdash;'}</span>
+                <span class="mdns-type">${(d.type || '').replace('._tcp','').replace('._udp','')}</span>
                 ${ipHtml}
             </div>`;
         }).join('');
-        card.innerHTML = `<div class="card-title">mDNS Devices <span class="count">${data.length} found</span></div>
-                          <div class="mdns-list">${rows}</div>`;
+        panel.innerHTML = `<div class="section-title"><span class="pulse"></span>${data.length} devices</div><div>${rows}</div>`;
     } catch (e) {
-        card.innerHTML = `<div class="card-title">mDNS Devices</div><div class="no-data">Error: ${e}</div>`;
+        panel.innerHTML = `<div class="no-data">Error: ${e}</div>`;
     }
 }
 
-// ── DHCP Scope ────────────────────────────────────────────────────────────────
-
 async function refreshDhcp() {
-    const card = document.getElementById('card-dhcp');
+    const panel = document.getElementById('panel-dhcp');
     try {
         const resp = await fetch('/api/dhcp').then(r => r.json());
         const opts = resp.options || [];
-        const age  = resp.fetched_at
-            ? Math.round(Date.now() / 1000 - resp.fetched_at) : null;
-        const ageStr = age != null
-            ? ` <span style="color:#444;font-size:0.8em">(${age < 60 ? age + 's' : Math.round(age / 60) + 'm'} ago)</span>`
-            : '';
         if (!opts.length) {
-            card.innerHTML = `<div class="card-title">DHCP Scope Options${ageStr}</div>
-                              <div class="no-data">Waiting for DHCP ACK&hellip;</div>`;
+            panel.innerHTML = `<div class="no-data">Waiting for DHCP ACK&hellip;</div>`;
             return;
         }
         const rows = opts.map(o =>
             field(`<span class="flag-${o.flag || 'unknown'}">[${o.option}] ${o.label}</span>`, o.value)
         ).join('');
-        card.innerHTML = `<div class="card-title">DHCP Scope Options${ageStr}</div>${rows}`;
+        panel.innerHTML = `<div class="section-title"><span class="pulse"></span>Scope Options</div>${rows}`;
     } catch (e) {
-        card.innerHTML = `<div class="card-title">DHCP Scope Options</div><div class="no-data">Error: ${e}</div>`;
+        panel.innerHTML = `<div class="no-data">Error: ${e}</div>`;
     }
 }
 
-// ── Refresh loop ──────────────────────────────────────────────────────────────
-
 async function refresh() {
-    document.getElementById('last-update').textContent =
-        'Last updated: ' + new Date().toLocaleTimeString();
     await Promise.all([refreshIp(), refreshIface(), refreshNeighbours(), refreshMdns(), refreshDhcp()]);
 }
 
